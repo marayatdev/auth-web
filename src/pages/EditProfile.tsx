@@ -10,7 +10,6 @@ const EditProfile = () => {
     const navigate = useNavigate()
     const user = useAuthStore((state) => state.user);
     const setUser = useAuthStore((state) => state.setUser);
-    const [loading, setLoading] = useState(false);
 
     const [form, setForm] = useState({
         name: "",
@@ -94,7 +93,6 @@ const EditProfile = () => {
         }
 
         try {
-            setLoading(true);
 
             const payload = {
                 name: form.name,
@@ -117,8 +115,6 @@ const EditProfile = () => {
             navigate("/info");
         } catch (error) {
             console.error(error);
-        } finally {
-            setLoading(false);
         }
     };
 
