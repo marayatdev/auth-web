@@ -4,12 +4,10 @@ import api from '../lib/axios'
 
 const Info = () => {
     const navigate = useNavigate()
+    const user = useAuthStore((state) => state.user);
 
-    // mock user (ตอนต่อ API ค่อย replace ด้วย token decode)
-    const user = {
-        username: 'chawa_dev',
-        email: 'chawa@email.com',
-    }
+    console.log('User info:', user)
+
 
     const handleLogout = async () => {
         try {
@@ -44,14 +42,14 @@ const Info = () => {
                         <div className="flex justify-between text-sm">
                             <span className="text-[#7a6a5f]">Username</span>
                             <span className="text-[#3b2f2a] font-medium">
-                                {user.username}
+                                {user?.name}
                             </span>
                         </div>
 
                         <div className="flex justify-between text-sm">
                             <span className="text-[#7a6a5f]">Email</span>
                             <span className="text-[#3b2f2a] font-medium">
-                                {user.email}
+                                {user?.email}
                             </span>
                         </div>
                     </div>
@@ -60,7 +58,7 @@ const Info = () => {
                     <div className="space-y-3">
 
                         <button
-                            onClick={() => alert('Go to profile')}
+                            onClick={() => navigate('/info/edit')}
                             className="w-full h-11 rounded-lg border border-[#d8c8b8] text-[#3b2f2a] hover:bg-[#f2e9df] transition"
                         >
                             ดูโปรไฟล์

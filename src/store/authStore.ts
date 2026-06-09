@@ -4,7 +4,7 @@ import { create } from "zustand";
 import api from "../lib/axios";
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
 }
@@ -22,10 +22,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   setUser: (user) => set({ user }),
 
   fetchMe: async () => {
-    const { data } = await api.get("/auth/me");
+    const response = await api.get("/auth/me");
 
     set({
-      user: data,
+      user: response.data.data,
     });
   },
 

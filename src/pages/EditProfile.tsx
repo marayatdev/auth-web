@@ -1,63 +1,126 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Input } from '../components/ui/input'
 import { Button } from '../components/ui/button'
 import { Label } from '../components/ui/label'
+import { useAuthStore } from '../store/authStore'
+import api from '../lib/axios'
 
 const EditProfile = () => {
     const navigate = useNavigate()
+    const user = useAuthStore((state) => state.user);
+    const setUser = useAuthStore((state) => state.setUser);
+    const [loading, setLoading] = useState(false);
 
     const [form, setForm] = useState({
-        username: 'chawa_dev',
-        email: 'chawa@email.com',
-        password: '',
-        confirmPassword: '',
-    })
+        name: "",
+        email: "",
+        password: "",
+        newPassword: "",
+    });
 
     const [errors, setErrors] = useState<Partial<typeof form>>({})
 
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
+    console.log("Current user in EditProfile:", user);
+
+    useEffect(() => {
+        if (!user) return;
+
+        setForm((prev) => ({
+            ...prev,
+            name: user.name,
+            email: user.email,
+        }));
+    }, [user]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setForm((prev) => ({ ...prev, [name]: value }))
-        setErrors((prev) => ({ ...prev, [name]: undefined }))
-    }
+        const { name, value } = e.target;
+
+        setForm((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+
+        setErrors((prev) => ({
+            ...prev,
+            [name]: undefined,
+        }));
+    };
 
     const validate = () => {
-        const newErrors: Partial<typeof form> = {}
+        const newErrors: Partial<typeof form> = {};
 
-        if (!form.username) newErrors.username = 'กรุณากรอกชื่อผู้ใช้'
-
-        if (!form.email) newErrors.email = 'กรุณากรอกอีเมล'
-        else if (!/\S+@\S+\.\S+/.test(form.email))
-            newErrors.email = 'รูปแบบอีเมลไม่ถูกต้อง'
-
-        // password optional (only validate if user types)
-        if (form.password) {
-            if (form.password.length < 6)
-                newErrors.password = 'รหัสผ่านต้องอย่างน้อย 6 ตัวอักษร'
-
-            if (form.password !== form.confirmPassword)
-                newErrors.confirmPassword = 'รหัสผ่านไม่ตรงกัน'
+        if (!form.name.trim()) {
+            newErrors.name = "กรุณากรอกชื่อ";
         }
 
-        return newErrors
-    }
+        if (!form.email.trim()) {
+            newErrors.email = "กรุณากรอกอีเมล";
+        } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+            newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
+        }
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
+        if (form.newPassword) {
+            if (!form.password) {
+                newErrors.password = "กรุณากรอกรหัสผ่านปัจจุบัน";
+            }
 
-        const newErrors = validate()
+            if (form.newPassword.length < 8) {
+                newErrors.newPassword =
+                    "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร";
+            }
+
+            if (form.newPassword !== form.password) {
+                newErrors.password = "รหัสผ่านไม่ตรงกัน";
+            }
+        }
+
+        return newErrors;
+    };
+
+    const handleSubmit = async (
+        e: React.FormEvent<HTMLFormElement>
+    ) => {
+        e.preventDefault();
+
+        const newErrors = validate();
+
         if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors)
-            return
+            setErrors(newErrors);
+            return;
         }
 
-        // TODO: API update profile
-        navigate('/info')
-    }
+        try {
+            setLoading(true);
+
+            const payload = {
+                name: form.name,
+                email: form.email,
+                password: form.password,
+                newPassword: form.newPassword || undefined,
+            };
+
+            console.log("user", user);
+
+            console.log("Submitting payload:", payload);
+
+            const response = await api.put(
+                `/users/${user?._id}`,
+                payload
+            );
+
+            setUser(response.data.data);
+
+            navigate("/info");
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const EyeIcon = ({ open }: { open: boolean }) =>
         open ? (
@@ -91,14 +154,14 @@ const EditProfile = () => {
                                 ชื่อผู้ใช้
                             </Label>
                             <Input
-                                name="username"
-                                value={form.username}
+                                name="name"
+                                value={form.name}
                                 onChange={handleChange}
                                 className="h-11 rounded-lg border-[#d8c8b8] bg-[#fffdf9] focus-visible:ring-1 focus-visible:ring-[#b89b7a]"
                             />
-                            {errors.username && (
+                            {errors.name && (
                                 <p className="text-xs text-[#8a6f5a]">
-                                    {errors.username}
+                                    {errors.name}
                                 </p>
                             )}
                         </div>
@@ -163,9 +226,9 @@ const EditProfile = () => {
 
                                 <div className="relative">
                                     <Input
-                                        name="confirmPassword"
+                                        name="newPassword"
                                         type={showConfirmPassword ? 'text' : 'password'}
-                                        value={form.confirmPassword}
+                                        value={form.newPassword}
                                         onChange={handleChange}
                                         className="h-11 pr-10 rounded-lg border-[#d8c8b8] bg-[#fffdf9] focus-visible:ring-1 focus-visible:ring-[#b89b7a]"
                                     />
@@ -181,9 +244,9 @@ const EditProfile = () => {
                                     </button>
                                 </div>
 
-                                {errors.confirmPassword && (
+                                {errors.newPassword && (
                                     <p className="text-xs text-[#8a6f5a]">
-                                        {errors.confirmPassword}
+                                        {errors.newPassword}
                                     </p>
                                 )}
                             </div>
