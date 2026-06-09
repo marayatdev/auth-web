@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom'
+import { useAuthStore } from '../store/authStore'
+import api from '../lib/axios'
 
 const Info = () => {
     const navigate = useNavigate()
@@ -9,9 +11,14 @@ const Info = () => {
         email: 'chawa@email.com',
     }
 
-    const handleLogout = () => {
-        // TODO: clear token later
-        navigate('/')
+    const handleLogout = async () => {
+        try {
+            await api.post('/auth/logout')
+            useAuthStore.getState().logout()
+            navigate('/')
+        } catch (error) {
+            console.error('Logout failed:', error)
+        }
     }
 
     return (

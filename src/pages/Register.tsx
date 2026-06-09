@@ -5,10 +5,12 @@ import { Button } from '../components/ui/button'
 import { Label } from '../components/ui/label'
 import { useToast } from '../hook/useToast'
 import api from '../lib/axios'
+import type { AxiosError } from 'axios'
+import { useAuthStore } from "../store/authStore";
 
 const Register = () => {
     const navigate = useNavigate()
-
+    const { fetchMe } = useAuthStore();
     const [form, setForm] = useState({
         name: '',
         email: '',
@@ -71,33 +73,40 @@ const Register = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
+        if (loading) return
+
+        setErrors({})
+
         const newErrors = validate()
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors)
             return
         }
 
         try {
-
             setLoading(true)
 
-            await api.post('/auth/register', form)
+            await api.post("/auth/register", form)
 
-            showToast('Registration success 🎉', 'success')
+            await fetchMe()
+
+            showToast("Registration success 🎉", "success")
 
             setTimeout(() => {
-                navigate('/info')
+                navigate("/info")
             }, 800)
 
-        } catch (err: any) {
+        } catch (error) {
+            const err = error as AxiosError<{ message: string }>
+
             showToast(
-                err.response?.data?.message || 'Registration failed',
-                'error'
+                err.response?.data?.message || "Registration failed",
+                "error"
             )
         } finally {
             setLoading(false)
         }
-
     }
 
     const RuleItem = ({ label, valid }: { label: string; valid: boolean }) => (

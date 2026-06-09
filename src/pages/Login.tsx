@@ -5,12 +5,13 @@ import { Input } from '../components/ui/input'
 import { Button } from '../components/ui/button'
 import { Label } from '../components/ui/label'
 import { useToast } from '../hook/useToast'
+import { useAuthStore } from '../store/authStore'
 
 const Login = () => {
     const navigate = useNavigate()
     const { showToast, ToastContainer } = useToast()
     const [showPassword, setShowPassword] = useState(false)
-
+    const { fetchMe } = useAuthStore();
     const [form, setForm] = useState({
         email: '',
         password: '',
@@ -56,6 +57,8 @@ const Login = () => {
             setLoading(true)
 
             await api.post('/auth/login', form)
+
+            await fetchMe()
 
             showToast('Login success 🎉', 'success')
 
