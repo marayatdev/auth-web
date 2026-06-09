@@ -29,7 +29,7 @@ const Info = () => {
                     {/* Header */}
                     <div className="text-center space-y-1">
                         <h1 className="text-2xl font-semibold text-[#3b2f2a]">
-                            ยินดีต้อนรับ 👋
+                            ยินดีต้อนรับ คุณ {user?.name} 👋
                         </h1>
                         <p className="text-sm text-[#7a6a5f]">
                             คุณเข้าสู่ระบบสำเร็จแล้ว
